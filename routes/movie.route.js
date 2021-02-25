@@ -25,17 +25,31 @@ router.get('/:movieId', (req, res, next) => {
 //sending new movies to the db.
 router.post('/', function (req, res) {
     const movie = new MovieModel(req.body); //matching all movie properties automatically
+    
     // movie.save((err,data)=>{  //using callback function
     //     if(err){res.json(err)};
     //     res.json(data);
     // });
 
-    const promise = movie.save(); // using promise
-    promise.then((data)=>{
-      res.json(data)
-    }).catch((err)=>{
-      res.json(err)
-    })
+    movie.save() // using promise
+    .then((data)=>{res.json(data)})
+    .catch((err)=>{res.json(err)})
+})
+
+//updating movies in database
+router.put('/:movieId', function (req, res, next) {
+  MovieModel.findByIdAndUpdate(req.params.movieId,req.body, {new:true})
+  .then((data)=>{res.json(data)})
+  .catch((err)=>{next({message:'The movie was not found', code:99})
+  res.json(err)})
+})
+
+//updating movies in database
+router.delete('/:movieId', function (req, res, next) {
+  MovieModel.findByIdAndRemove(req.params.movieId)
+            .then((data)=>{res.json(data)})
+            .catch((err)=>{next({message:'The movie was not found', code:99})
+            res.json(err)})
 })
 
 module.exports = router;
