@@ -11,6 +11,40 @@ router.get('/', (req, res) => {
   .catch((err)=>{res.json(err)})
 })
 
+//getting movies with their directors
+router.get('/directorlist', (req, res) => {
+  MovieModel.aggregate(
+    [
+      {
+        $lookup:
+        {
+          from:'directors',
+          localField:'director_id',
+          foreignField:'_id',
+          as:'director'
+        }
+      }
+    ]
+  ) // => lists all db items
+  .then((data)=>{res.json(data)})
+  .catch((err)=>{res.json(err)})
+})
+
+//getting movies betwwen to given created years
+router.get('/between/:start/:end', (req, res) => { //url always returns string
+  const {start, end} = req.params;
+  MovieModel.find({year:{"$gte":Number(start), "$lte":Number(end)}}) // checking the years between end and start
+  .then((data)=>{res.json(data)})
+  .catch((err)=>{res.json(err)})
+})
+
+//getting top 10 movies from db to movie page (/api/movies)
+router.get('/top10', (req, res) => {
+  MovieModel.find().sort({imdb_score:-1}).limit(10) // => lists all db items
+  .then((data)=>{res.json(data)})
+  .catch((err)=>{res.json(err)})
+})
+
 // getting movie by giving ID
 router.get('/:movieId', (req, res, next) => {
   MovieModel.findById(req.params.movieId) // => lists movie by its ID
@@ -44,7 +78,7 @@ router.put('/:movieId', function (req, res, next) {
   res.json(err)})
 })
 
-//updating movies in database
+//deleting movies in database
 router.delete('/:movieId', function (req, res, next) {
   MovieModel.findByIdAndRemove(req.params.movieId)
             .then((data)=>{res.json(data)})
